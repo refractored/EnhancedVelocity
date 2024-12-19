@@ -6,11 +6,12 @@ plugins {
 }
 
 group = "ir.syrent"
-version = findProperty("version")
+version = findProperty("version")!!
 val slug = "enhancedvelocity"
 description = "Customize your Velocity network experience"
 
 repositories {
+    maven("https://jitpack.io")
     mavenLocal()
     mavenCentral()
 
@@ -39,6 +40,8 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.11.0")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
     implementation("commons-io:commons-io:2.6")
+    implementation("com.github.Revxrsal.Lamp:common:3.3.3")
+    implementation("com.github.Revxrsal.Lamp:velocity:3.3.3")
 }
 java {
     withSourcesJar()
@@ -55,15 +58,16 @@ tasks {
                 "version" to rootProject.version as String,
                 "slug" to slug,
                 "name" to rootProject.name,
-                "description" to rootProject.description
+                "description" to rootProject.description,
             )
         }
     }
 
-    val relocations = mutableMapOf(
-        "org.bstats" to "ir.syrent.enhancedvelocity.bstats",
-        "org.spongepowered" to "ir.syrent.spongepowered"
-    )
+    val relocations =
+        mutableMapOf(
+            "org.bstats" to "ir.syrent.enhancedvelocity.bstats",
+            "org.spongepowered" to "ir.syrent.spongepowered",
+        )
 
     shadowJar {
         minimize()
@@ -80,7 +84,7 @@ tasks {
         archiveFileName = (findProperty("plugin-name") as String) + " v" + findProperty("version") + " " + "unshaded" + ".jar"
     }
 
-    withType<Jar>() {
+    withType<Jar> {
         destinationDirectory = file("$rootDir/bin/")
     }
 
@@ -97,7 +101,6 @@ tasks {
         }
     }
 }
-
 
 configurations {
     "apiElements" {
@@ -126,28 +129,6 @@ configurations {
             attribute(Category.CATEGORY_ATTRIBUTE, project.objects.named(Category.DOCUMENTATION))
             attribute(Bundling.BUNDLING_ATTRIBUTE, project.objects.named(Bundling.SHADOWED))
             attribute(DocsType.DOCS_TYPE_ATTRIBUTE, project.objects.named(DocsType.SOURCES))
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            shadow.component(this)
-            artifact(tasks["sourcesJar"])
-            setPom(this)
-        }
-    }
-
-    repositories {
-        maven {
-            name = "sayandevelopment-repo"
-            url = uri("https://repo.sayandev.org/snapshots/")
-
-            credentials {
-                username = System.getenv("REPO_SAYAN_USER") ?: project.findProperty("repo.sayan.user") as String
-                password = System.getenv("REPO_SAYAN_TOKEN") ?: project.findProperty("repo.sayan.token") as String
-            }
         }
     }
 }

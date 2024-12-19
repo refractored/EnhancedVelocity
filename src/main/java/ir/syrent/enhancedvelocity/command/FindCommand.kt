@@ -10,7 +10,6 @@ import ir.syrent.enhancedvelocity.vruom.VRuom
 import java.util.concurrent.CompletableFuture
 
 class FindCommand : SimpleCommand {
-
     init {
         VRuom.registerCommand(Settings.findCommand, Settings.findAliases, this)
     }
@@ -53,14 +52,32 @@ class FindCommand : SimpleCommand {
             Message.FIND_USE,
             TextReplacement("player", targetPlayer.username),
             TextReplacement("server", if (server.isPresent) server.get().serverInfo.name else "Unknown"),
-            TextReplacement("vanished", if (vanished && sender.hasPermission(Permissions.Actions.FIND_VANISHED)) Settings.formatMessage(Message.FIND_VANISHED) else "")
+            TextReplacement(
+                "vanished",
+                if (vanished &&
+                    sender.hasPermission(Permissions.Actions.FIND_VANISHED)
+                ) {
+                    Settings.formatMessage(Message.FIND_VANISHED)
+                } else {
+                    ""
+                },
+            ),
         )
     }
 
     override fun suggest(invocation: SimpleCommand.Invocation): List<String> {
         val list = VanishHook.getNonVanishedPlayers().map { it.username }
 
-        return if (list.isNotEmpty()) list.filter { it.lowercase().startsWith(invocation.arguments().last().lowercase()) }.sorted() else list
+        return if (list.isNotEmpty()) {
+            list
+                .filter {
+                    it.lowercase().startsWith(
+                        invocation.arguments().last().lowercase(),
+                    )
+                }.sorted()
+        } else {
+            list
+        }
     }
 
     override fun suggestAsync(invocation: SimpleCommand.Invocation): CompletableFuture<List<String>> {
